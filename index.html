@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quanto Custa a Viagem?</title>
+<meta name="description" content="Calcula o custo de uma viagem de carro em Portugal: combustível, portagens e estacionamento, dividido por quem vai.">
+<style>
+  :root { --fundo:#0f1114; --cartao:#181b20; --linha:#2b2f37; --texto:#eef0f3; --suave:#8d95a3;
+          --acento:#ffb86b; --ok:#4fd1a5; }
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--fundo);
+         color:var(--texto); line-height:1.5; }
+  main { max-width: 900px; margin:0 auto; padding: 2rem 1.25rem 4rem; }
+  h1 { margin:0; font-size:1.65rem; }
+  .sub { color:var(--suave); margin:.3rem 0 1.5rem; }
+  .grelha { display:grid; grid-template-columns: 1fr 1fr; gap:1rem; align-items:start; }
+  @media (max-width: 740px) { .grelha { grid-template-columns: 1fr; } }
+  .cartao { background:var(--cartao); border:1px solid var(--linha); border-radius:14px; padding:1.25rem; }
+  label { font-size:.8rem; color:var(--suave); display:block; margin:.85rem 0 .3rem; }
+  input { width:100%; padding:.62rem .7rem; border-radius:8px; border:1px solid var(--linha);
+          background:var(--fundo); color:var(--texto); font-size:1rem; }
+  .duas { display:grid; grid-template-columns: 1fr 1fr; gap:.75rem; }
+  .seg { display:flex; gap:.4rem; flex-wrap:wrap; }
+  .seg button { flex:1; padding:.55rem .5rem; border-radius:8px; border:1px solid var(--linha); background:var(--fundo);
+                color:var(--suave); cursor:pointer; font-size:.88rem; }
+  .seg button.on { border-color:var(--acento); color:var(--texto); background:#2b2116; }
+  .ajuda { font-size:.75rem; color:var(--suave); margin-top:.3rem; }
+  .pessoas { display:flex; align-items:center; gap:.5rem; }
+  .pessoas button { width:42px; height:42px; border-radius:8px; border:1px solid var(--linha); background:var(--fundo);
+                    color:var(--texto); font-size:1.2rem; cursor:pointer; }
+  .pessoas output { min-width:2.5rem; text-align:center; font-size:1.2rem; font-weight:700; }
+  .destaque { text-align:center; padding:.25rem 0 1rem; border-bottom:1px solid var(--linha); margin-bottom:.75rem; }
+  .destaque span { color:var(--suave); font-size:.85rem; }
+  .destaque b { display:block; font-size:2.6rem; color:var(--acento); font-variant-numeric: tabular-nums; line-height:1.15; }
+  .destaque .pp { color:var(--texto); font-size:1.05rem; }
+  .destaque .pp strong { color:var(--ok); font-size:1.3rem; }
+  table { width:100%; border-collapse:collapse; font-size:.93rem; }
+  td { padding:.5rem .2rem; border-bottom:1px solid var(--linha); }
+  td:last-child { text-align:right; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom:0; }
+  td small { color:var(--suave); }
+  .acoes { display:flex; gap:.5rem; margin-top:1rem; align-items:center; }
+  .acoes button { padding:.62rem 1rem; border:0; border-radius:8px; background:var(--acento); color:#1d1205;
+                  font-weight:600; cursor:pointer; }
+  .msg { color:var(--ok); font-size:.85rem; }
+  .nota { font-size:.8rem; color:var(--suave); margin-top:1rem; }
+  .nota a { color:var(--acento); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Quanto custa a viagem?</h1>
+  <p class="sub">Combustível, portagens e estacionamento de uma viagem de carro, e quanto paga cada pessoa.</p>
+
+  <div class="grelha">
+    <div class="cartao">
+      <label for="km">Distância só de ida (km)</label>
+      <input id="km" type="number" min="0" step="1" value="300">
+
+      <label>Viagem</label>
+      <div class="seg" id="percurso">
+        <button data-v="2" class="on">Ida e volta</button>
+        <button data-v="1">Só ida</button>
+      </div>
+
+      <label>Combustível</label>
+      <div class="seg" id="combustivel">
+        <button data-v="gasolina" class="on">Gasolina</button>
+        <button data-v="gasoleo">Gasóleo</button>
+        <button data-v="gpl">GPL</button>
+        <button data-v="eletrico">Elétrico</button>
+      </div>
+
+      <div class="duas">
+        <div><label for="consumo" id="lblConsumo">Consumo (L/100 km)</label><input id="consumo" type="number" min="0" step="0.1" value="6.5"></div>
+        <div><label for="preco" id="lblPreco">Preço (€/L)</label><input id="preco" type="number" min="0" step="0.001" value="1.92"></div>
+      </div>
+      <div class="ajuda" id="ajudaPreco"></div>
+
+      <div class="duas">
+        <div><label for="portagens">Portagens só de ida (€)</label><input id="portagens" type="number" min="0" step="0.05" value="0"></div>
+        <div><label for="estacionamento">Estacionamento (€)</label><input id="estacionamento" type="number" min="0" step="0.5" value="0"></div>
+      </div>
+      <div class="ajuda">O valor das portagens aparece ao planear o percurso no Google Maps ou no site da Via Verde.</div>
+
+      <label>Pessoas a dividir</label>
+      <div class="pessoas">
+        <button id="menos" aria-label="Menos uma pessoa">−</button>
+        <output id="pessoas">1</output>
+        <button id="mais" aria-label="Mais uma pessoa">+</button>
+      </div>
+    </div>
+
+    <div class="cartao">
+      <div class="destaque">
+        <span>Custo total da viagem</span>
+        <b id="total">—</b>
+        <span class="pp" id="porPessoa"></span>
+      </div>
+      <table id="detalhe"></table>
+      <div class="acoes">
+        <button id="copiar">Copiar resumo para o grupo</button>
+        <span class="msg" id="msg"></span>
+      </div>
+      <p class="nota">Combustíveis: preços médios de referência a 9 de novembro de 2026, com base nos dados da DGEG. Mudam todas as semanas e de posto para posto, por isso ajusta ao preço que vais pagar. Eletricidade: valor típico a carregar em casa.
+        Não inclui desgaste do carro, seguro nem manutenção.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+const COMBUSTIVEIS = {
+  gasolina: { preco: 1.92, consumo: 6.5, unidade: "L", nome: "gasolina" },
+  gasoleo:  { preco: 2.15, consumo: 5.5, unidade: "L", nome: "gasóleo" },
+  gpl:      { preco: 1.09, consumo: 8.0, unidade: "L", nome: "GPL" },
+  eletrico: { preco: 0.20, consumo: 16,  unidade: "kWh", nome: "eletricidade" },
+};
+const estado = { percurso: 2, combustivel: "gasolina", pessoas: 1 };
+const $ = id => document.getElementById(id);
+const euro = v => v.toLocaleString("pt-PT", { style: "currency", currency: "EUR" });
+const num = (v, d = 1) => v.toLocaleString("pt-PT", { maximumFractionDigits: d });
+let ultimoResumo = "";
+
+function aplicarCombustivel() {
+  const c = COMBUSTIVEIS[estado.combustivel];
+  $("consumo").value = c.consumo; $("preco").value = c.preco;
+  $("lblConsumo").textContent = `Consumo (${c.unidade}/100 km)`;
+  $("lblPreco").textContent = `Preço (€/${c.unidade})`;
+  $("ajudaPreco").textContent = estado.combustivel === "eletrico"
+    ? "0,20 €/kWh é um valor típico a carregar em casa; em postos rápidos pode passar de 0,50 €/kWh."
+    : "Valores de exemplo para um carro médio. O consumo real está no manual ou no computador de bordo.";
+}
+
+function calcular() {
+  const km = Math.max(0, +$("km").value || 0) * estado.percurso;
+  const consumo = Math.max(0, +$("consumo").value || 0);
+  const preco = Math.max(0, +$("preco").value || 0);
+  const portagens = Math.max(0, +$("portagens").value || 0) * estado.percurso;
+  const estac = Math.max(0, +$("estacionamento").value || 0);
+  const c = COMBUSTIVEIS[estado.combustivel];
+
+  const quantidade = km * consumo / 100;
+  const combustivel = quantidade * preco;
+  const total = combustivel + portagens + estac;
+  const pp = total / estado.pessoas;
+
+  $("total").textContent = euro(total);
+  $("porPessoa").innerHTML = estado.pessoas > 1 ? `<strong>${euro(pp)}</strong> por pessoa` : "Adiciona pessoas para dividir";
+  $("detalhe").innerHTML = [
+    ["Distância", `${num(km, 0)} km`],
+    [`${c.nome[0].toUpperCase() + c.nome.slice(1)} <small>(${num(quantidade)} ${c.unidade})</small>`, euro(combustivel)],
+    ...(portagens ? [["Portagens", euro(portagens)]] : []),
+    ...(estac ? [["Estacionamento", euro(estac)]] : []),
+    ["Custo por km", km ? euro(total / km) : "—"],
+  ].map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("");
+
+  ultimoResumo = `🚗 Viagem ${estado.percurso === 2 ? "ida e volta" : "só ida"} (${num(km, 0)} km)\n` +
+    `⛽ ${c.nome[0].toUpperCase() + c.nome.slice(1)}: ${euro(combustivel)}` +
+    (portagens ? `\n🛣️ Portagens: ${euro(portagens)}` : "") +
+    (estac ? `\n🅿️ Estacionamento: ${euro(estac)}` : "") +
+    `\n💶 Total: ${euro(total)}` + (estado.pessoas > 1 ? `\n👥 ${euro(pp)} por pessoa (${estado.pessoas} pessoas)` : "");
+}
+
+for (const grupo of ["percurso", "combustivel"]) {
+  $(grupo).addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    estado[grupo] = grupo === "percurso" ? +b.dataset.v : b.dataset.v;
+    document.querySelectorAll(`#${grupo} button`).forEach(x => x.classList.toggle("on", x === b));
+    if (grupo === "combustivel") aplicarCombustivel();
+    calcular();
+  });
+}
+$("menos").onclick = () => { estado.pessoas = Math.max(1, estado.pessoas - 1); $("pessoas").textContent = estado.pessoas; calcular(); };
+$("mais").onclick = () => { estado.pessoas = Math.min(9, estado.pessoas + 1); $("pessoas").textContent = estado.pessoas; calcular(); };
+$("copiar").onclick = async () => {
+  try { await navigator.clipboard.writeText(ultimoResumo); $("msg").textContent = "Copiado!"; }
+  catch { $("msg").textContent = "Não deu para copiar neste browser."; }
+  setTimeout(() => $("msg").textContent = "", 2500);
+};
+document.querySelectorAll("input").forEach(i => i.addEventListener("input", calcular));
+aplicarCombustivel();
+calcular();
+</script>
+</body>
+</html>
